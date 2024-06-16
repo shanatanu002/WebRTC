@@ -5,7 +5,7 @@ const PeerContext = React.createContext(null);
 export const usePeer = () => React.useContext(PeerContext);
 
 export const PeerProvider = (props) => {
-    const[remoteStream, setRemoteStream] = useState();
+    const[remoteStream, setRemoteStream] = useState(null);
     const peer = useMemo(() => new RTCPeerConnection( {
         iceServers: 
                [
@@ -46,12 +46,13 @@ export const PeerProvider = (props) => {
         setRemoteStream(streams[0]) // we will have multiple streams of the user and we'll pick up its 0th element
     }, [])   //it is necessary to create these function seperately and not inside useEffect() but instead remove the eventListener inside useEffect as all these event listeners keeps regestering and it may hang the app 
     
+    
     useEffect(() => {
-        peer.addEventListener('track',handleTrackEvent);
-          return () => {
-            peer.removeEventListener('tracks', handleTrackEvent) 
-          }
-    },[ handleTrackEvent, peer])
+        peer.addEventListener('track',handleTrackEvent);   
+        return () => {
+            peer.removeEventListener('track', handleTrackEvent);     
+        };
+    },[handleTrackEvent, peer])
    
     return(
         <PeerContext.Provider value={{peer, createOffer, createAnswer, setRemoteAnswer, sendStream, remoteStream}}>
